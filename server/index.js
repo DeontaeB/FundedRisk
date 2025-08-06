@@ -20,12 +20,10 @@ app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// Routes
+// Routes (only include existing routes)
 app.use('/api/auth', require('./routes/auth'))
 app.use('/api/trades', require('./routes/trades'))
-app.use('/api/compliance', require('./routes/compliance'))
 app.use('/api/webhooks', require('./routes/webhooks'))
-app.use('/api/notifications', require('./routes/notifications'))
 
 // WebSocket handling
 io.on('connection', (socket) => {

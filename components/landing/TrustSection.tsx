@@ -1,11 +1,9 @@
 export default function TrustSection() {
   const platforms = [
-    { name: "TradingView", width: "w-32", available: true, featured: true },
-    { name: "MetaTrader", width: "w-28", available: false },
-    { name: "NinjaTrader", width: "w-36", available: false },
-    { name: "ThinkorSwim", width: "w-32", available: false },
-    { name: "Sierra Chart", width: "w-28", available: false },
-    { name: "CQG", width: "w-20", available: false }
+    { name: "TradingView", width: "w-40", available: true, featured: true },
+    { name: "NinjaTrader", width: "w-32", available: false },
+    { name: "rTrader", width: "w-28", available: false },
+    { name: "Tradovate", width: "w-32", available: false }
   ]
 
   return (
@@ -16,36 +14,41 @@ export default function TrustSection() {
             Platform Integrations
           </p>
           <h3 className="text-2xl font-bold text-secondary-900 mb-2">
-            Start with TradingView, More Coming Soon
+            <span className="text-primary-600">TradingView</span> Integration Ready Now
           </h3>
           <p className="text-secondary-600 max-w-2xl mx-auto">
-            We're launching with full TradingView integration. Additional platforms will be added based on user demand.
+            Start protecting your account today with our complete TradingView integration. Connect your alerts in under 5 minutes and get real-time compliance monitoring for every trade.
           </p>
         </div>
         
-        <div className="relative pt-4 pb-4">
-          <div className="flex items-center justify-center space-x-8 md:space-x-12">
+        <div className="relative pt-6 pb-4">
+          <div className="flex items-center justify-center space-x-6 md:space-x-10">
             {platforms.map((platform, index) => (
               <div
                 key={index}
-                className={`${platform.width} h-12 rounded-lg flex items-center justify-center relative transition-all duration-300 ${
+                className={`${platform.width} h-14 rounded-lg flex items-center justify-center relative transition-all duration-300 ${
                   platform.available 
-                    ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-1' 
-                    : 'bg-secondary-200 text-secondary-500'
+                    ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-xl hover:shadow-2xl transform hover:-translate-y-2 border-2 border-primary-400' 
+                    : 'bg-secondary-100 text-secondary-400 hover:bg-secondary-200'
                 }`}
               >
-                <span className={`text-xs font-medium text-center px-2 ${platform.featured ? 'font-bold' : ''}`}>
+                <span className={`text-sm font-medium text-center px-3 ${platform.featured ? 'font-bold text-lg' : ''}`}>
                   {platform.name}
                 </span>
                 {platform.featured && (
-                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-success-500 rounded-full flex items-center justify-center border-2 border-white shadow-md z-10">
-                    <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
+                  <>
+                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-success-500 rounded-full flex items-center justify-center border-2 border-white shadow-lg z-10">
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 bg-success-500 text-white text-xs px-3 py-1 rounded-full whitespace-nowrap font-semibold shadow-lg">
+                      LIVE NOW
+                    </div>
+                  </>
                 )}
                 {!platform.available && (
-                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 bg-warning-100 text-warning-700 text-xs px-2 py-0.5 rounded-full whitespace-nowrap">
+                  <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full whitespace-nowrap font-medium">
                     Coming Soon
                   </div>
                 )}

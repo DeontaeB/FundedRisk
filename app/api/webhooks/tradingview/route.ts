@@ -40,14 +40,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Log webhook for debugging
-    await prisma.tradingViewWebhook.create({
+    await prisma.webhookEvent.create({
       data: {
         userId,
+        source: 'tradingview',
+        rawPayload: JSON.parse(body),
         symbol,
         action,
         quantity: parseFloat(quantity),
         price: price ? parseFloat(price) : null,
-        timestamp: timestamp || new Date().toISOString(),
       },
     })
 

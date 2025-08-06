@@ -1,4 +1,4 @@
-import PropFirmSelector from '@/components/onboarding/PropFirmSelector'
+import SimplifiedOnboarding from '@/components/onboarding/SimplifiedOnboarding'
 
 export default function OnboardingPage() {
   return (
@@ -9,13 +9,13 @@ export default function OnboardingPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-primary-600 to-accent-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">F</span>
+                <span className="text-white font-bold text-lg">P</span>
               </div>
-              <span className="text-xl font-bold font-display text-secondary-900">FundedSafe</span>
+              <span className="text-xl font-bold font-display text-secondary-900">PropRuleTracker</span>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-sm text-secondary-600">
-                Step 1 of 3: Account Setup
+                Quick Setup
               </div>
             </div>
           </div>
@@ -25,7 +25,7 @@ export default function OnboardingPage() {
       {/* Main Content */}
       <div className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <PropFirmSelector />
+          <SimplifiedOnboarding />
         </div>
       </div>
     </div>

@@ -40,9 +40,9 @@ export default function Footer() {
           <div className="lg:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 bg-gradient-to-r from-primary-400 to-accent-400 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">F</span>
+                <span className="text-white font-bold text-lg">P</span>
               </div>
-              <span className="text-xl font-bold font-display">FundedSafe</span>
+              <span className="text-xl font-bold font-display">PropRuleTracker</span>
             </div>
             <p className="text-secondary-300 mb-6 max-w-xs">
               The most trusted compliance platform for futures traders. 
@@ -120,7 +120,7 @@ export default function Footer() {
         {/* Bottom Section */}
         <div className="mt-12 pt-8 border-t border-secondary-800 flex flex-col md:flex-row justify-between items-center">
           <div className="text-secondary-300 text-sm mb-4 md:mb-0">
-            © 2024 FundedSafe. All rights reserved.
+            © 2024 PropRuleTracker. All rights reserved.
           </div>
           
           <div className="flex items-center space-x-6 text-sm text-secondary-300">

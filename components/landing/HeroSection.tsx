@@ -39,7 +39,7 @@ export default function HeroSection() {
           {/* Subheadline */}
           <p className={`text-large max-w-3xl mx-auto mb-10 ${mounted ? 'animate-slide-up' : ''}`} style={{ animationDelay: '0.2s' }}>
             FundedSafe automatically monitors your TradingView strategies and stops violations before they happen. 
-            Protect your prop firm account for just $1.07/day - less than the cost of a coffee.
+            Protect your prop firm account for just $0.83/day - less than the cost of a coffee.
           </p>
 
           {/* CTA Buttons */}
@@ -50,7 +50,7 @@ export default function HeroSection() {
                 <div className="absolute inset-0 bg-gradient-to-r from-primary-700 to-accent-700 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
               </button>
             </Link>
-            <Link href="/demo/dashboard">
+            <Link href="/dashboard-demo">
               <button className="btn-secondary group">
                 <svg className="w-5 h-5 mr-2 group-hover:animate-pulse" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
@@ -62,7 +62,7 @@ export default function HeroSection() {
 
           {/* Trust Indicators */}
           <div className={`text-center ${mounted ? 'animate-fade-in' : ''}`} style={{ animationDelay: '0.6s' }}>
-            <p className="text-sm text-secondary-500 mb-4">No credit card required • Cancel anytime • GDPR compliant</p>
+            <p className="text-sm text-secondary-500 mb-4">7 days for $1 • Cancel anytime • GDPR compliant</p>
             <div className="flex items-center justify-center space-x-6 text-sm text-secondary-400">
               <div className="flex items-center">
                 <svg className="w-4 h-4 text-success-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -96,7 +96,7 @@ export default function HeroSection() {
                   <div className="w-3 h-3 bg-error-500 rounded-full"></div>
                   <div className="w-3 h-3 bg-warning-500 rounded-full"></div>
                   <div className="w-3 h-3 bg-success-500 rounded-full"></div>
-                  <div className="ml-4 text-sm font-medium text-secondary-600">FundedSafe Dashboard</div>
+                  <div className="ml-4 text-sm font-medium text-secondary-600">PropRuleTracker Dashboard</div>
                 </div>
               </div>
               <div className="p-8">

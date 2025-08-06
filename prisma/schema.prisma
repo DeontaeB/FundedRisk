@@ -45,6 +45,7 @@ model User {
   emailVerified DateTime?
   password      String?
   image         String?
+  phone         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -52,14 +53,23 @@ model User {
   stripeCustomerId String?
   paymentStatus    String @default("inactive")
 
+  // Trading Setup
+  webhookUrl       String?  @unique
+  isSetupComplete  Boolean  @default(false)
+  
+  // Notification Preferences
+  notificationPreferences Json?
+
   // Relations
-  accounts      Account[]
-  sessions      Session[]
-  trades        Trade[]
-  alerts        Alert[]
-  subscriptions Subscription[]
-  complianceRules ComplianceRule[]
-  notifications Notification[]
+  accounts         Account[]
+  sessions         Session[]
+  trades           Trade[]
+  alerts           Alert[]
+  subscriptions    Subscription[]
+  complianceRules  ComplianceRule[]
+  notifications    Notification[]
+  userAccounts     UserTradingAccount[]
+  webhookEvents    WebhookEvent[]
 }
 
 model VerificationToken {
@@ -71,25 +81,31 @@ model VerificationToken {
 }
 
 model Trade {
-  id            String    @id @default(cuid())
-  userId        String
-  symbol        String
-  side          String    // "buy" or "sell"
-  quantity      Float
-  price         Float
-  closePrice    Float?
-  orderType     String    @default("market")
-  status        String    @default("open") // "open", "closed", "cancelled"
-  pnl           Float?
-  source        String    @default("manual") // "manual", "tradingview", "api"
-  tradingViewId String?
-  createdAt     DateTime  @default(now())
-  closedAt      DateTime?
-  updatedAt     DateTime  @updatedAt
+  id                   String    @id @default(cuid())
+  userId               String
+  userTradingAccountId String?
+  symbol               String
+  side                 String    // "buy" or "sell"
+  quantity             Float
+  price                Float
+  closePrice           Float?
+  orderType            String    @default("market")
+  status               String    @default("open") // "open", "closed", "cancelled"
+  pnl                  Float?
+  source               String    @default("manual") // "manual", "tradingview", "api"
+  tradingViewId        String?
+  createdAt            DateTime  @default(now())
+  closedAt             DateTime?
+  updatedAt            DateTime  @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Relations
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userTradingAccount   UserTradingAccount?  @relation(fields: [userTradingAccountId], references: [id])
+  webhookEvents        WebhookEvent[]
+  complianceChecks     ComplianceCheck[]
 
   @@index([userId, createdAt])
+  @@index([userTradingAccountId, createdAt])
   @@index([status])
 }
 
@@ -108,6 +124,7 @@ model ComplianceRule {
   alerts Alert[]
 
   @@index([userId, isActive])
+  @@unique([userId, name])
 }
 
 model Alert {
@@ -166,18 +183,149 @@ model Subscription {
   @@index([status])
 }
 
-model TradingViewWebhook {
-  id        String   @id @default(cuid())
-  userId    String
-  symbol    String
-  action    String   // "buy", "sell", "close"
-  quantity  Float
-  price     Float?
-  timestamp String
-  processed Boolean  @default(false)
-  tradeId   String?
-  createdAt DateTime @default(now())
+// Prop Firm Models
+model PropFirm {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  displayName String
+  website     String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@index([userId, processed])
-  @@index([timestamp])
+  // Relations
+  accounts    PropFirmAccount[]
+  ruleTemplates PropFirmRuleTemplate[]
+  
+  @@index([isActive])
+}
+
+model PropFirmAccount {
+  id          String   @id @default(cuid())
+  propFirmId  String
+  name        String   // "Scale", "Core", "Pro", etc.
+  accountSize Float    // Account balance like 50000, 100000
+  isActive    Boolean  @default(true)
+  
+  // Relations
+  propFirm         PropFirm               @relation(fields: [propFirmId], references: [id])
+  userAccounts     UserTradingAccount[]
+  ruleTemplates    PropFirmRuleTemplate[]
+  
+  @@unique([propFirmId, name, accountSize])
+  @@index([propFirmId, isActive])
+}
+
+model PropFirmRuleTemplate {
+  id                String   @id @default(cuid())
+  propFirmId        String
+  propFirmAccountId String?  // If null, applies to all accounts of this firm
+  
+  // Rule Configuration
+  ruleType          String   // "daily_loss", "max_drawdown", "position_size", "trading_hours", "max_contracts"
+  maxValue          Float?   // Max loss amount, position size, etc.
+  percentage        Float?   // For percentage-based rules like drawdown
+  timeStart         String?  // Trading hours start (HH:MM)
+  timeEnd           String?  // Trading hours end (HH:MM)
+  timezone          String?  // Timezone for trading hours
+  isActive          Boolean  @default(true)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  propFirm          PropFirm         @relation(fields: [propFirmId], references: [id])
+  propFirmAccount   PropFirmAccount? @relation(fields: [propFirmAccountId], references: [id])
+  
+  @@index([propFirmId, ruleType])
+  @@index([propFirmAccountId, ruleType])
+}
+
+model UserTradingAccount {
+  id                String   @id @default(cuid())
+  userId            String
+  propFirmAccountId String
+  
+  // Account Details
+  accountNumber     String?
+  startingBalance   Float
+  currentBalance    Float
+  isActive          Boolean  @default(true)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  propFirmAccount   PropFirmAccount    @relation(fields: [propFirmAccountId], references: [id])
+  trades            Trade[]
+  complianceChecks  ComplianceCheck[]
+  webhookEvents     WebhookEvent[]
+  
+  @@index([userId, isActive])
+}
+
+// Enhanced Webhook and Trading Models
+model WebhookEvent {
+  id                    String   @id @default(cuid())
+  userId                String
+  userTradingAccountId  String?
+  
+  // Webhook Details
+  source                String   // "tradingview", "mt4", "ninja_trader"
+  rawPayload            Json
+  parsedData            Json?
+  
+  // Trade Information
+  symbol                String
+  action                String   // "buy", "sell", "close_long", "close_short"
+  quantity              Float?
+  price                 Float?
+  stopLoss              Float?
+  takeProfit            Float?
+  
+  // Processing Status
+  status                String   @default("received") // "received", "processing", "processed", "failed", "rejected"
+  processingError       String?
+  isComplianceViolation Boolean  @default(false)
+  
+  createdAt             DateTime @default(now())
+  processedAt           DateTime?
+  
+  // Relations
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userTradingAccount    UserTradingAccount? @relation(fields: [userTradingAccountId], references: [id])
+  trade                 Trade?              @relation(fields: [tradeId], references: [id])
+  tradeId               String?
+  complianceChecks      ComplianceCheck[]
+  
+  @@index([userId, status])
+  @@index([createdAt])
+  @@index([source])
+}
+
+model ComplianceCheck {
+  id                   String   @id @default(cuid())
+  userTradingAccountId String
+  webhookEventId       String?
+  tradeId              String?
+  
+  // Check Details
+  ruleType             String   // "daily_loss", "position_size", etc.
+  currentValue         Float    // Current loss, position size, etc.
+  limitValue           Float    // The limit that was checked against
+  isViolation          Boolean
+  violationSeverity    String?  // "warning", "minor", "major", "critical"
+  
+  // Context
+  checkTimestamp       DateTime @default(now())
+  metadata             Json?    // Additional context data
+  
+  // Relations
+  userTradingAccount   UserTradingAccount @relation(fields: [userTradingAccountId], references: [id])
+  webhookEvent         WebhookEvent?      @relation(fields: [webhookEventId], references: [id])
+  trade                Trade?             @relation(fields: [tradeId], references: [id])
+  
+  @@index([userTradingAccountId, isViolation])
+  @@index([checkTimestamp])
 }

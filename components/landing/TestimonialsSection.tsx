@@ -20,7 +20,7 @@ export default function TestimonialsSection() {
       highlight: "Saved $300 in reset fees"
     },
     {
-      content: "The TradingView webhook integration took 5 minutes to set up. My strategies now automatically check compliance before executing trades. It's like having a $150/hour risk manager for $2/day.",
+      content: "The TradingView webhook integration took 5 minutes to set up. My strategies now automatically check compliance before executing trades. It's like having a $150/hour risk manager for less than $1/day.",
       author: "Sarah Williams",
       role: "Algorithmic Trader", 
       company: "TopStep $100K",
@@ -29,7 +29,7 @@ export default function TestimonialsSection() {
       highlight: "5-minute setup"
     },
     {
-      content: "I almost lost my $100K TopStep account to a daily loss violation. FundedSafe's alert stopped the trade before it executed. That one save paid for 5 years of the service.",
+      content: "I almost lost my $100K TopStep account to a daily loss violation. FundedSafe's alert stopped the trade before it executed. That one save paid for 10 years of the service.",
       author: "David Rodriguez",
       role: "Funded Trader",
       company: "TopStep Trading Combine",
@@ -47,7 +47,7 @@ export default function TestimonialsSection() {
       highlight: "Prevented $150 reset"
     },
     {
-      content: "Best $65/month I spend on trading. The platform paid for itself by preventing just one compliance violation. I've been trading for 3 months with zero violations since connecting my TradingView.",
+      content: "Best $24.99/month I spend on trading. The platform paid for itself by preventing just one compliance violation. I've been trading for 3 months with zero violations since connecting my TradingView.",
       author: "James Park",
       role: "Futures Trader",
       company: "MyFundedFX Pro",
@@ -56,7 +56,7 @@ export default function TestimonialsSection() {
       highlight: "Paid for itself"
     },
     {
-      content: "Managing 4 prop firm accounts was stressful until FundedSafe. One webhook URL protects all my accounts. I sleep better knowing I can't accidentally violate rules overnight.",
+      content: "Managing 4 prop firm accounts was stressful until PropRuleTracker. One webhook URL protects all my accounts. I sleep better knowing I can't accidentally violate rules overnight.",
       author: "Lisa Anderson",
       role: "Multi-Account Trader",
       company: "Multiple Prop Firms",
@@ -75,7 +75,7 @@ export default function TestimonialsSection() {
           </h2>
           <p className="text-large max-w-3xl mx-auto">
             Don't just take our word for it. Here's what successful traders are saying 
-            about FundedSafe and how it's transformed their trading.
+            about PropRuleTracker and how it's transformed their trading.
           </p>
         </div>
 

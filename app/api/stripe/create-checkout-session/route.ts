@@ -1,45 +1,124 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import Stripe from 'stripe'
+import { PrismaClient } from '@prisma/client'
+import { getAuthenticatedUser } from '@/lib/api-auth'
+import { createStripeCustomer, createCheckoutSession, PRICING_PLAN } from '@/lib/stripe-server'
+import { z } from 'zod'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
+const prisma = new PrismaClient()
+
+const createCheckoutSchema = z.object({
+  successUrl: z.string().url().optional(),
+  cancelUrl: z.string().url().optional(),
 })
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const { user, error } = await getAuthenticatedUser(request)
+    if (error) {
+      return NextResponse.json({ error }, { status: 401 })
     }
 
-    const { priceId } = await req.json()
+    const body = await request.json().catch(() => ({}))
+    const { successUrl, cancelUrl } = createCheckoutSchema.parse(body)
 
-    const checkoutSession = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      success_url: `${process.env.NEXTAUTH_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXTAUTH_URL}/settings/billing`,
-      customer_email: session.user.email!,
-      metadata: {
-        userId: session.user.id,
-      },
+    // Get the user from database to check current status
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      include: {
+        subscriptions: {
+          where: { 
+            status: { in: ['active', 'trialing'] }
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 1
+        }
+      }
     })
 
-    return NextResponse.json({ url: checkoutSession.url })
+    if (!dbUser) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    // Check if user already has an active subscription
+    if (dbUser.subscriptions.length > 0) {
+      return NextResponse.json(
+        { error: 'User already has an active subscription' },
+        { status: 400 }
+      )
+    }
+
+    // Use the universal plan
+    const plan = PRICING_PLAN
+
+    // Create or get Stripe customer
+    let customerId = dbUser.stripeCustomerId
+    
+    if (!customerId) {
+      const customer = await createStripeCustomer(
+        dbUser.email,
+        `${dbUser.firstName || ''} ${dbUser.lastName || ''}`.trim()
+      )
+      
+      customerId = customer.id
+      
+      // Update user with Stripe customer ID
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { stripeCustomerId: customerId }
+      })
+    }
+
+    // Create checkout session
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+    
+    const session = await createCheckoutSession({
+      customerId,
+      priceId: plan.priceId,
+      successUrl: successUrl || `${baseUrl}/onboarding/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancelUrl: cancelUrl || `${baseUrl}/pricing`,
+      metadata: {
+        userId: user.id,
+        planId: plan.id,
+      }
+    })
+
+    return NextResponse.json({
+      success: true,
+      sessionId: session.id,
+      url: session.url,
+      plan: {
+        id: plan.id,
+        name: plan.name,
+        price: plan.price,
+        features: plan.features
+      }
+    })
+
   } catch (error) {
-    console.error('Error creating checkout session:', error)
+    console.error('Create checkout session error:', error)
+    
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: error.errors[0].message },
+        { status: 400 }
+      )
+    }
+
+    if (error instanceof Error && error.message.includes('Stripe')) {
+      return NextResponse.json(
+        { error: 'Payment service error. Please try again.' },
+        { status: 503 }
+      )
+    }
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to create checkout session' },
       { status: 500 }
     )
+  } finally {
+    await prisma.$disconnect()
   }
 }

@@ -15,10 +15,10 @@ export default function DemoDashboardPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="w-8 h-8 bg-gradient-to-r from-primary-600 to-accent-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">F</span>
+                <span className="text-white font-bold text-lg">P</span>
               </div>
               <div>
-                <h1 className="text-xl font-bold font-display text-secondary-900">FundedSafe Dashboard</h1>
+                <h1 className="text-xl font-bold font-display text-secondary-900">PropRuleTracker Dashboard</h1>
                 <p className="text-sm text-secondary-600">Demo Mode - Experience the premium interface</p>
               </div>
             </div>
@@ -142,7 +142,7 @@ export default function DemoDashboardPage() {
             <div className="text-center">
               <h3 className="text-2xl font-bold mb-4">Ready to get started?</h3>
               <p className="text-primary-100 mb-6 max-w-2xl mx-auto">
-                This is just a preview of what you'll get with FundedSafe. Start your free trial to access 
+                This is just a preview of what you'll get with PropRuleTracker. Start your free trial to access 
                 real-time compliance monitoring, alerts, and all premium features.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

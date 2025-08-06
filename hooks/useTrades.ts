@@ -15,11 +15,7 @@ export function useTrades() {
 
     try {
       setLoading(true)
-      const response = await fetch('/api/trades', {
-        headers: {
-          'Authorization': `Bearer ${session.accessToken}`,
-        },
-      })
+      const response = await fetch('/api/trades')
 
       if (!response.ok) {
         throw new Error('Failed to fetch trades')
@@ -43,7 +39,6 @@ export function useTrades() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.accessToken}`,
         },
         body: JSON.stringify(tradeData),
       })
@@ -69,7 +64,6 @@ export function useTrades() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.accessToken}`,
         },
         body: JSON.stringify(updates),
       })

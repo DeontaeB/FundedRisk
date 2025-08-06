@@ -28,11 +28,28 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (session?.user?.id) {
-      const newSocket = io(process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3001')
+      const newSocket = io(process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3001', {
+        auth: {
+          token: session.accessToken || 'dummy-token-for-dev'
+        },
+        transports: ['websocket', 'polling']
+      })
       
       newSocket.on('connect', () => {
         console.log('Connected to server')
-        newSocket.emit('join-room', session.user.id)
+        // The secure server automatically joins user to their room
+      })
+
+      newSocket.on('connected', (data) => {
+        console.log('Server confirmed connection:', data)
+      })
+      
+      newSocket.on('connect_error', (error) => {
+        console.error('Connection error:', error.message)
+        // For development, we'll still allow the connection
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Continuing in development mode despite auth error')
+        }
       })
 
       newSocket.on('trade-created', (trade) => {

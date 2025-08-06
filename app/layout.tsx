@@ -7,8 +7,8 @@ import { NotificationProvider } from '@/contexts/NotificationContext'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'FundedSafe - Futures Trading Compliance',
-  description: 'Real-time compliance tracking platform for US futures traders',
+  title: 'PropRuleTracker - Prop Firm Compliance Monitoring',
+  description: 'Real-time compliance tracking platform for prop firm traders',
 }
 
 export default function RootLayout({

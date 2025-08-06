@@ -1,47 +1,96 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { PrismaClient } from '@prisma/client'
-import Stripe from 'stripe'
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-})
+import { getAuthenticatedUser } from '@/lib/api-auth'
+import { createBillingPortalSession } from '@/lib/stripe-server'
+import { z } from 'zod'
 
 const prisma = new PrismaClient()
 
-export async function POST(req: NextRequest) {
+const createPortalSchema = z.object({
+  returnUrl: z.string().url().optional(),
+})
+
+export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const { user, error } = await getAuthenticatedUser(request)
+    if (error) {
+      return NextResponse.json({ error }, { status: 401 })
     }
 
-    // Get user's Stripe customer ID
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { stripeCustomerId: true }
+    const body = await request.json().catch(() => ({}))
+    const { returnUrl } = createPortalSchema.parse(body)
+
+    // Get user's Stripe customer ID and subscription info
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { 
+        stripeCustomerId: true,
+        subscriptions: {
+          where: { 
+            status: { in: ['active', 'trialing', 'past_due'] }
+          },
+          take: 1
+        }
+      }
     })
 
-    if (!user?.stripeCustomerId) {
+    if (!dbUser) {
       return NextResponse.json(
-        { error: 'No subscription found' },
+        { error: 'User not found' },
         { status: 404 }
       )
     }
 
-    const portalSession = await stripe.billingPortal.sessions.create({
-      customer: user.stripeCustomerId,
-      return_url: `${process.env.NEXTAUTH_URL}/settings/billing`,
+    if (!dbUser.stripeCustomerId) {
+      return NextResponse.json(
+        { error: 'No billing account found. Please subscribe to a plan first.' },
+        { status: 400 }
+      )
+    }
+
+    if (dbUser.subscriptions.length === 0) {
+      return NextResponse.json(
+        { error: 'No active subscription found.' },
+        { status: 400 }
+      )
+    }
+
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+    const finalReturnUrl = returnUrl || `${baseUrl}/settings/billing`
+
+    const portalSession = await createBillingPortalSession(
+      dbUser.stripeCustomerId,
+      finalReturnUrl
+    )
+
+    return NextResponse.json({
+      success: true,
+      url: portalSession.url,
+      returnUrl: finalReturnUrl
     })
 
-    return NextResponse.json({ url: portalSession.url })
   } catch (error) {
-    console.error('Error creating portal session:', error)
+    console.error('Create portal session error:', error)
+    
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: error.errors[0].message },
+        { status: 400 }
+      )
+    }
+
+    if (error instanceof Error && error.message.includes('Stripe')) {
+      return NextResponse.json(
+        { error: 'Billing service error. Please try again.' },
+        { status: 503 }
+      )
+    }
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to create billing portal session' },
       { status: 500 }
     )
+  } finally {
+    await prisma.$disconnect()
   }
 }

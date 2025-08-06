@@ -15,10 +15,10 @@ export default function Header() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-primary-600 to-accent-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">F</span>
+                <span className="text-white font-bold text-lg">P</span>
               </div>
               <span className="text-xl font-bold font-display text-secondary-900">
-                FundedSafe
+                PropRuleTracker
               </span>
             </Link>
           </div>
